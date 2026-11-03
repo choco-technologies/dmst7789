@@ -6,46 +6,18 @@
 #include <stddef.h>
 #include "dmod_types.h"
 #include "dmst7789_defs.h"
+#include "dmst7789_types.h"
 
 /**
- * Public API for the dmst7789 module.
+ * @brief Check a configuration without touching hardware
  *
- * Functions are declared with the dmod_dmst7789_api(...) macro - dmod's
- * standard pattern for functions callable from other modules (or from this
- * module's own tests/), resolved dynamically by the loader rather than
- * through normal static linkage. See dm_sw_ring/include/dm_sw_ring.h for a
- * fully worked real-world example of the same shape.
- *
- * Definitions in src/dmst7789.c use the matching
- * dmod_dmst7789_api_declaration(...) macro - a plain C function
- * definition here will NOT satisfy these declarations at link time.
- *
- * This is an example interface using the usual "opaque handle" pattern -
- * replace the handle, functions, and struct definition in
- * src/dmst7789.c with your module's real API.
+ * @return true when the size, the offsets and the rotation make a panel the controller can show.
  */
-
-/* Opaque handle - the real struct is defined in src/dmst7789.c */
-typedef struct dmst7789* dmst7789_t;
+dmod_dmst7789_api(1.0, bool, _validate_config, ( const dmst7789_config_t *config ));
 
 /**
- * Create a new dmst7789 instance.
- *
- * @return A valid handle on success, or NULL on allocation failure.
+ * @brief Convert a 0xAARRGGBB color to the pixel of the framebuffer (RGB565)
  */
-dmod_dmst7789_api(1.0, dmst7789_t, _create, ( void ));
-
-/**
- * Destroy an instance created by dmst7789_create(). Safe to call with
- * NULL.
- */
-dmod_dmst7789_api(1.0, void, _destroy, ( dmst7789_t handle ));
-
-/**
- * Example accessor - replace with your module's real API.
- *
- * @return true if handle is a valid, non-NULL instance.
- */
-dmod_dmst7789_api(1.0, bool, _is_valid, ( dmst7789_t handle ));
+dmod_dmst7789_api(1.0, uint16_t, _color_to_rgb565, ( uint32_t argb ));
 
 #endif // DMST7789_H

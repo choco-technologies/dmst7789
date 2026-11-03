@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.18)
 
+# The code does not depend on the CPU: the module is built per architecture (-DDMOD_TOOLS_NAME=arch/<name>, as the release workflow does).
+# DMOD_CPU_FAMILY only decides which package of dmgpio dmod_link_modules() takes the headers from (its packages are named by family,
+# there is none for x86_64): they are the same for every architecture.
+set(DMOD_CPU_FAMILY "stm32f7" CACHE STRING "CPU family of the packages the headers are taken from")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT DEFINED DMOD_MODULE_VERSION)
@@ -72,9 +77,16 @@ target_include_directories(${DMOD_MODULE_NAME}_if INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# To depend on another module's headers, use:
-#   dmod_link_modules(${DMOD_MODULE_NAME}
-#       other_module@1.0
-#   )
+# dmdrvi: the driver interface (the friends of dmdevfs and the generic graphics commands), dmini: the configuration, dmosi: the lock
+# and the delays, dmgpio: the commands of the data/command, reset and backlight lines. No versions: the latest ones are taken.
+dmod_link_modules(${DMOD_MODULE_NAME}
+    dmdrvi
+    dmini
+    dmosi
+    dmgpio
+)
 enable_testing()
 add_subdirectory(tests)
+
+# A manual test of a display (tools/lcdtest/README.md), not part of ctest: it needs a panel
+add_subdirectory(tools/lcdtest)

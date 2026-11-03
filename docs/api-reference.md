@@ -19,9 +19,10 @@ at a byte offset (RGB565, little-endian in memory, `stride = width * 2`). Nothin
 `flush()` presents what was written through `write()` or `FILL_RECT` since the last `PRESENT` (the lines touched). A client that draws
 through the pointer of `GET_FRAMEBUFFER` must `PRESENT` the area itself.
 
-A `PRESENT` is a window (CASET, RASET), RAMWR and the pixels, most significant byte first, in chunks of whole lines from a buffer in
-the internal RAM (so that the DMA of dmspi moves it in place). The whole 240x320 screen is 150 kB: on the ESP32-S3 at 40 MHz about
-90 ms (31 ms on the wire; the rest is the byte swap and the set-up of every chunk), a partial `PRESENT` costs in proportion.
+A `PRESENT` is a window (CASET, RASET), RAMWR and the pixels as they are in the framebuffer (the start sequence puts the panel in
+little-endian pixels, RAMCTRL 0xB0), in chunks of whole lines copied into a buffer in the internal RAM (so that the DMA of dmspi moves it
+in place). The whole 240x320 screen is 150 kB: on the ESP32-S3 at 40 MHz about
+90 ms (31 ms on the wire; the rest is the copy and the set-up of every chunk), a partial `PRESENT` costs in proportion.
 
 ## Functions (module API)
 

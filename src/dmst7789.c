@@ -279,7 +279,7 @@ static uint8_t madctl(const dmst7789_config_t *c)
     return (uint8_t)(rotation[c->rotation] | (c->bgr ? 0x08U : 0x00U));
 }
 
-/* The start sequence of the vendor of the panel (Waveshare ESP32-S3-Touch-LCD-2.8), 16 bits per pixel */
+/* The start sequence of the vendor of the panel (Waveshare ESP32-S3-Touch-LCD-2.8), 16 bits per pixel, little-endian pixels (0xB0) */
 static int panel_init(dmdrvi_context_t context)
 {
     const dmst7789_config_t *c = &context->config;
@@ -379,21 +379,16 @@ static int push_area(dmdrvi_context_t context, uint32_t x0, uint32_t y0, uint32_
         send_command(context, CMD_RAMWR) != 0)
         return -EIO;
 
-    /* The pixels go out most significant byte first; the framebuffer holds them little-endian */
+    /* The pixels go out as they are in the framebuffer, least significant byte first: the start sequence sets the panel to that (RAMCTRL,
+       0xB0: the second parameter has the ENDIAN bit, 0x08, set), so there is no byte swap - a copy of whole lines into the buffer
+       that the DMA of dmspi moves in place */
     uint32_t lines_per_chunk = context->bounce_lines;
     for (uint32_t y = y0; y <= y1;)
     {
         uint32_t lines = y1 - y + 1U < lines_per_chunk ? y1 - y + 1U : lines_per_chunk;
         uint8_t *out = context->bounce;
-        for (uint32_t line = 0; line < lines; line++)
-        {
-            const uint8_t *in = context->framebuffer + (y + line) * context->stride + x0 * 2U;
-            for (uint32_t i = 0; i < w; i++)
-            {
-                *out++ = in[2U * i + 1U];
-                *out++ = in[2U * i];
-            }
-        }
+        for (uint32_t line = 0; line < lines; line++, out += w * 2U)
+            memcpy(out, context->framebuffer + (y + line) * context->stride + x0 * 2U, (size_t)w * 2U);
         if (send_data(context, context->bounce, (size_t)lines * w * 2U) != 0)
             return -EIO;
         y += lines;

@@ -40,13 +40,12 @@ See [docs/api-reference.md](docs/api-reference.md) and [docs/configuration.md](d
 
 ## Building
 
-```bash
-cmake -S . -B build -DDMOD_CPU_FAMILY=esp32s3     # or stm32f7, stm32f4
-cmake --build build
+The code does not depend on the CPU, so there is no port: the module is built per architecture, as dmtty or dmspiflash are.
 
-# the tests, on the host (dmgpio has no x86_64 package, so the family stays at its default):
-cmake -S . -B build-host -DDMOD_TOOLS_NAME=arch/x86_64 && cmake --build build-host && ctest --test-dir build-host
+```bash
+cmake -S . -B build && cmake --build build && ctest --test-dir build                       # the host: the tests
+cmake -S . -B build-esp -DDMOD_TOOLS_NAME=arch/xtensa/esp32s3 && cmake --build build-esp   # an architecture
 ```
 
-`src/port/<family>/config.cmake` only selects the tools of the family (the code is the same); the CI and the release build one
-package per family.
+`DMOD_CPU_FAMILY` (stm32f7 by default) only picks the package of dmgpio whose headers are used (its packages are named by family;
+the headers are the same for every architecture).

@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.18)
 
-# The code is the same for every family; the family selects the tools (the compiler) and the package
-set(DMOD_CPU_FAMILY "stm32f7" CACHE STRING "Target CPU family")
-include(${CMAKE_CURRENT_SOURCE_DIR}/src/port/${DMOD_CPU_FAMILY}/config.cmake)
+# The code does not depend on the CPU: the module is built per architecture (-DDMOD_TOOLS_NAME=arch/<name>, as the release workflow does).
+# DMOD_CPU_FAMILY only decides which package of dmgpio dmod_link_modules() takes the headers from (its packages are named by family,
+# there is none for x86_64): they are the same for every architecture.
+set(DMOD_CPU_FAMILY "stm32f7" CACHE STRING "CPU family of the packages the headers are taken from")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

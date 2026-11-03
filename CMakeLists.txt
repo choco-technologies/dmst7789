@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.18)
 
+# The code is the same for every family; the family selects the tools (the compiler) and the package
+set(DMOD_CPU_FAMILY "stm32f7" CACHE STRING "Target CPU family")
+include(${CMAKE_CURRENT_SOURCE_DIR}/src/port/${DMOD_CPU_FAMILY}/config.cmake)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT DEFINED DMOD_MODULE_VERSION)
@@ -72,9 +76,16 @@ target_include_directories(${DMOD_MODULE_NAME}_if INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# To depend on another module's headers, use:
-#   dmod_link_modules(${DMOD_MODULE_NAME}
-#       other_module@1.0
-#   )
+# dmdrvi: the driver interface (the friends of dmdevfs and the generic graphics commands), dmini: the configuration, dmosi: the lock
+# and the delays, dmgpio: the commands of the data/command, reset and backlight lines. No versions: the latest ones are taken.
+dmod_link_modules(${DMOD_MODULE_NAME}
+    dmdrvi
+    dmini
+    dmosi
+    dmgpio
+)
 enable_testing()
 add_subdirectory(tests)
+
+# A manual test of a display (tools/lcdtest/README.md), not part of ctest: it needs a panel
+add_subdirectory(tools/lcdtest)

@@ -14,6 +14,9 @@ target_include_directories(${DMOD_MODULE_NAME} PRIVATE
 
 target_link_libraries(${DMOD_MODULE_NAME} dmst7789_if)
 
+# dmdrvi: the header of dmst7789_types.h (the numbers of the ioctl commands)
+dmod_link_modules(${DMOD_MODULE_NAME} dmdrvi)
+
 # Register the test module with ctest - this replays the same two steps CI
 # runs (see .github/templates/ci.yml.template): install the test module's
 # dependencies with dmf-get, then execute it through dmod_loader. The test's

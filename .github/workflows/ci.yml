@@ -23,8 +23,10 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          # The tests (the validation and the colors) run on the host; the families are built below.
-          cmake .. -DDMOD_MODE=DMOD_MODULE -DDMOD_CPU_FAMILY=x86_64
+          # The tests (the validation and the colors) run on the host: the tools are the host's, the CPU family stays at its
+          # default (stm32f7) - dmod_link_modules fetches the headers of dmgpio by it, and dmgpio has never published an x86_64
+          # package. The families that have a package are built below.
+          cmake .. -DDMOD_MODE=DMOD_MODULE -DDMOD_TOOLS_NAME=arch/x86_64
           cmake --build . --parallel
 
       - name: Verify module files

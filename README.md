@@ -36,6 +36,8 @@ Dmod_Ioctl(fp, DMDRVI_IOCTL_GFX_FILL_RECT, &rect);
 Dmod_Ioctl(fp, DMDRVI_IOCTL_GFX_PRESENT, NULL);              /* to the panel (or an area of it) */
 ```
 
+The display shows a **splash screen** from the first frame on (`clear_color` and a `.dmvir` logo, `splash_logo` or `$SPLASH_LOGO`), as dmlcdtft does.
+
 See [docs/api-reference.md](docs/api-reference.md) and [docs/configuration.md](docs/configuration.md). `tools/lcdtest` draws test pictures.
 
 ## Building

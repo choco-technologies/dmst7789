@@ -33,6 +33,16 @@ typedef struct
     uint32_t            clear_color;        /**< 0xAARRGGBB the framebuffer starts with (the picture is shown from the start) */
 } dmst7789_config_t;
 
+/** @brief The framebuffer a splash logo is drawn into (RGB565, little-endian pixels) */
+typedef struct
+{
+    uint8_t  *buffer;           /**< Start of the framebuffer */
+    uint32_t  stride;           /**< Bytes of one line */
+    uint16_t  width;            /**< Pixels per line */
+    uint16_t  height;           /**< Lines */
+    uint32_t  background;       /**< 0xRRGGBB the logo is blended over (what the framebuffer is filled with) */
+} dmst7789_splash_target_t;
+
 /** Commands of the node, besides the generic graphics ones (DMDRVI_IOCTL_GFX_*) */
 typedef enum
 {

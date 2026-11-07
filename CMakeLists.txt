@@ -67,6 +67,7 @@ set(DMOD_DIF_IMPLS          )
 dmod_add_library(${DMOD_MODULE_NAME} ${DMOD_MODULE_VERSION}
     # List of source files - can include C and C++ files
     src/dmst7789.c
+    src/dmst7789_splash.c
 )
 
 target_include_directories(${DMOD_MODULE_NAME} PRIVATE

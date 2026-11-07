@@ -30,3 +30,4 @@ in place). The whole 240x320 screen is 150 kB: on the ESP32-S3 at 40 MHz about
 |---|---|
 | `bool dmst7789_validate_config(const dmst7789_config_t*)` | the size and the offsets fit the 240 x 320 RAM of the controller, the rotation is known |
 | `uint16_t dmst7789_color_to_rgb565(uint32_t argb)` | the pixel of the framebuffer |
+| `int dmst7789_splash_draw(const char *path, const dmst7789_splash_target_t *target)` | draws the logo of a `.dmvir` in the middle of a RGB565 framebuffer (what the driver does for the splash screen); `-ENOENT` / `-ENOTSUP` / `-EINVAL` |

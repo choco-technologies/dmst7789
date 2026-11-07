@@ -1,6 +1,7 @@
 #define DMOD_ENABLE_REGISTRATION    ON
 #include "dmod.h"
 #include "dmst7789.h"
+#include "dmst7789_splash.h"
 #include "dmdrvi.h"
 #include "dmini.h"
 #include "dmosi.h"
@@ -95,6 +96,11 @@ dmod_dmst7789_api_declaration(1.0, bool, _validate_config, ( const dmst7789_conf
     /* The RAM of the controller is 240 x 320; the panel is a window of it */
     return (uint32_t)config->width + config->offset_x <= PANEL_MAX_WIDTH &&
            (uint32_t)config->height + config->offset_y <= PANEL_MAX_HEIGHT;
+}
+
+dmod_dmst7789_api_declaration(1.0, int, _splash_draw, ( const char *path, const dmst7789_splash_target_t *target ))
+{
+    return dmst7789_splash_draw_file(path, target);
 }
 
 dmod_dmst7789_api_declaration(1.0, uint16_t, _color_to_rgb565, ( uint32_t argb ))
@@ -473,6 +479,40 @@ static void *alloc_internal(size_t size)
     return p != NULL ? p : Dmod_Malloc(size);
 }
 
+/* ---- Splash screen ---- */
+
+/* Environment variable with the path of the splash logo (set by dmod-boot, see DMBOOT_SPLASH_LOGO_PATH there); the splash_logo key of
+ * the configuration overrides it. */
+#define SPLASH_LOGO_ENV             "SPLASH_LOGO"
+
+/* Path of the splash logo: the splash_logo key, else the SPLASH_LOGO environment variable; NULL: no logo ("none" turns it off) */
+static const char *splash_logo_path(dmini_context_t ini)
+{
+    const char *path = dmini_get_string(ini, NULL, "splash_logo", NULL);
+    if (path == NULL)
+        path = Dmod_GetEnv(SPLASH_LOGO_ENV);
+    return (path == NULL || path[0] == '\0' || strcmp(path, "none") == 0) ? NULL : path;
+}
+
+/* Draws the logo in the middle of the cleared framebuffer: the panel shows it as soon as it is started */
+static void show_splash(dmdrvi_context_t context, const char *logo_path)
+{
+    if (logo_path == NULL)
+        return;
+    dmst7789_splash_target_t target = {
+        context->framebuffer, context->stride, context->width, context->height, context->config.clear_color & 0xFFFFFFU
+    };
+    int ret = dmst7789_splash_draw_file(logo_path, &target);
+    if (ret == -ENOENT)
+    {
+        DMOD_LOG_INFO("No splash logo at %s\n", logo_path);
+    }
+    else if (ret != 0)
+    {
+        DMOD_LOG_ERROR("Cannot show splash logo %s (%d)\n", logo_path, ret);
+    }
+}
+
 dmod_dmdrvi_dif_api_declaration(2.0, dmst7789, dmdrvi_context_t, _create, ( dmini_context_t config, dmdrvi_dev_num_t* dev_num ))
 {
     if (config == NULL || dev_num == NULL)
@@ -503,6 +543,7 @@ dmod_dmdrvi_dif_api_declaration(2.0, dmst7789, dmdrvi_context_t, _create, ( dmin
     /* The picture starts as clear_color: the panel never shows the garbage of the heap */
     dmdrvi_gfx_fill_rect_t all = { 0, 0, context->width, context->height, context->config.clear_color };
     fill_rect(context, &all);
+    show_splash(context, splash_logo_path(config));
 
     dev_num->flags = DMDRVI_NUM_MAJOR;
     dev_num->major = (dmdrvi_dev_id_t)context->instance;
